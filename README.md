@@ -53,7 +53,7 @@ Default SPI pins can be changed in `include/app_config.h`.
 
 | RC522 | ESP32 |
 | --- | --- |
-| SDA / SS | GPIO 5 |
+| SDA / SS | GPIO 21 |
 | SCK | GPIO 18 |
 | MOSI | GPIO 23 |
 | MISO | GPIO 19 |

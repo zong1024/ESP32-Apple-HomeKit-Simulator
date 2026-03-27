@@ -10,7 +10,7 @@ constexpr char kLockName[] = "Front Door";
 constexpr uint8_t kSpiSckPin = 18;
 constexpr uint8_t kSpiMisoPin = 19;
 constexpr uint8_t kSpiMosiPin = 23;
-constexpr uint8_t kRfidSsPin = 5;
+constexpr uint8_t kRfidSsPin = 21;
 constexpr uint8_t kRfidRstPin = 27;
 
 constexpr uint8_t kRelayPin = 26;
