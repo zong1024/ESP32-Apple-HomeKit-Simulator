@@ -1,14 +1,13 @@
-# ESP32 RFID HomeKit Lock Starter
+# Arduino Uno RFID Lock Starter
 
-This repository is a safe starter for building an `ESP32 + RC522 + HomeKit`
+This repository is a safe starter for building an `Arduino Uno + RC522`
 project.
 
 It is designed to:
 
-- expose the ESP32 as a HomeKit lock accessory
 - read locally managed RFID tag UIDs with an RC522 reader
 - unlock a relay output when an approved UID is scanned
-- keep the HomeKit lock state in sync with local access events
+- relock automatically after a timeout
 
 It is explicitly not designed to:
 
@@ -16,61 +15,59 @@ It is explicitly not designed to:
 - emulate Apple Home Key
 - copy, replay, export, or forge access credentials
 
-If your real goal is "build a HomeKit-capable lock controller with local RFID
-trigger support", this repository is a good starting point.
+If your real goal is "build a local RFID-triggered lock controller", this
+repository is a good starting point.
 
-## Why this project avoids Apple Wallet / Home Key emulation
+## Uno limitation
 
-The `RC522` is suitable for reading common ISO14443A / MIFARE-style tags for
-local automation and access-control prototypes.
+`Arduino Uno` is suitable for local RFID reads and relay control.
 
-Apple Wallet Home Key credentials are part of a protected secure-credential
-system. This project does not attempt to simulate or interact with those
-credentials.
+It is not a practical target for native HomeKit accessory support. If you want
+real HomeKit integration later, keep the RFID logic on Uno and add an ESP32 or
+another network-capable controller as the HomeKit side.
 
 ## Stack
 
-- [HomeSpan](https://github.com/HomeSpan/HomeSpan) for HomeKit accessory support
 - [miguelbalboa/rfid](https://github.com/miguelbalboa/rfid) for RC522 tag reads
 
 ## Current flow
 
 1. The RC522 reads a tag UID.
 2. The UID is compared against a local whitelist.
-3. If authorized, the ESP32 drives a relay output for a short time.
-4. The HomeKit lock state is updated.
-5. The lock returns to the secured state after a timeout.
+3. If authorized, the Uno drives a relay output for a short time.
+4. The lock returns to the secured state after a timeout.
 
 ## Files
 
-- `platformio.ini`: PlatformIO project config
+- `platformio.ini`: PlatformIO Uno project config
 - `include/app_config.example.h`: example pin and whitelist config
 - `src/main.cpp`: main firmware
 
 ## Default wiring
 
-Default SPI pins can be changed in `include/app_config.h`.
+On the Uno, the SPI pins are fixed.
 
-| RC522 | ESP32 |
+| RC522 | Arduino Uno |
 | --- | --- |
-| SDA / SS | GPIO 21 |
-| SCK | GPIO 18 |
-| MOSI | GPIO 23 |
-| MISO | GPIO 19 |
-| RST | GPIO 27 |
+| SDA / SS | D10 |
+| SCK | D13 |
+| MOSI | D11 |
+| MISO | D12 |
+| RST | D9 |
 | 3.3V | 3.3V |
 | GND | GND |
 
 Other outputs:
 
-- relay input: `GPIO 26`
-- status LED: `GPIO 2`
+- relay input: `D7`
+- status LED: `D8`
 
 Hardware notes:
 
 - power the RC522 from `3.3V`
 - use a transistor, MOSFET, or a logic-safe relay board if needed
 - add proper isolation and power design before driving a real door strike
+- do not feed the RC522 from `5V`
 
 ## Getting started
 
@@ -82,8 +79,7 @@ Copy-Item .\include\app_config.example.h .\include\app_config.h
 
 Then edit `include/app_config.h` and update at least:
 
-- accessory name
-- RC522 pins
+- controller name
 - relay pin
 - `kAuthorizedUids`
 
@@ -106,21 +102,20 @@ pio device monitor
 
 Run the firmware, open the serial monitor, and scan a tag.
 
-- approved tags print `Authorized tag`
+- approved tags unlock the relay and print the UID
 - unknown tags print `Rejected tag`
 
-Copy the UID into the whitelist in `include/app_config.h`:
+Copy the UID bytes into the whitelist in `include/app_config.h`:
 
 ```cpp
-constexpr const char *kAuthorizedUids[] = {
-    "DE AD BE EF",
-    "12 34 56 78",
+constexpr AuthorizedUid kAuthorizedUids[] = {
+    {4, {0xDE, 0xAD, 0xBE, 0xEF}},
+    {4, {0x12, 0x34, 0x56, 0x78}},
 };
 ```
 
 ## Included features
 
-- HomeKit lock accessory skeleton
 - RC522 polling
 - UID whitelist matching
 - duplicate-scan suppression
@@ -129,15 +124,13 @@ constexpr const char *kAuthorizedUids[] = {
 
 ## Good next steps
 
-- move the whitelist into NVS storage
+- move the whitelist into EEPROM storage
 - add an admin-card enrollment mode
 - add buzzer and richer LED feedback
 - add a door contact sensor
-- add a small web UI for tag management
-- add Home Assistant or MQTT integration
 - add audit logging
 
 ## Summary
 
-This repository is a safe starter for a local RFID-triggered HomeKit lock
-controller. It is not an Apple Wallet or Home Key emulation project.
+This repository is a safe starter for a local RFID-triggered lock controller on
+Arduino Uno. It is not an Apple Wallet or Home Key emulation project.
