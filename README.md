@@ -1,6 +1,6 @@
-# Arduino Uno RFID Lock Starter
+# ESP32-C3 RFID Lock Starter
 
-This repository is a safe starter for building an `Arduino Uno + RC522`
+This repository is a safe starter for building an `ESP32-C3 + RC522`
 project.
 
 It is designed to:
@@ -18,13 +18,11 @@ It is explicitly not designed to:
 If your real goal is "build a local RFID-triggered lock controller", this
 repository is a good starting point.
 
-## Uno limitation
+## Scope
 
-`Arduino Uno` is suitable for local RFID reads and relay control.
-
-It is not a practical target for native HomeKit accessory support. If you want
-real HomeKit integration later, keep the RFID logic on Uno and add an ESP32 or
-another network-capable controller as the HomeKit side.
+This repository currently targets an `ESP32-C3` local RFID controller.
+An `Arduino Uno` fallback environment is still included, but `ESP32-C3` is the
+default build target.
 
 ## Stack
 
@@ -34,33 +32,33 @@ another network-capable controller as the HomeKit side.
 
 1. The RC522 reads a tag UID.
 2. The UID is compared against a local whitelist.
-3. If authorized, the Uno drives a relay output for a short time.
+3. If authorized, the controller drives a relay output for a short time.
 4. The lock returns to the secured state after a timeout.
 
 ## Files
 
-- `platformio.ini`: PlatformIO Uno project config
+- `platformio.ini`: PlatformIO configs for ESP32-C3 and Uno
 - `include/app_config.example.h`: example pin and whitelist config
 - `src/main.cpp`: main firmware
 
 ## Default wiring
 
-On the Uno, the SPI pins are fixed.
+Default pins below are for `ESP32-C3`.
 
-| RC522 | Arduino Uno |
+| RC522 | ESP32-C3 |
 | --- | --- |
-| SDA / SS | D10 |
-| SCK | D13 |
-| MOSI | D11 |
-| MISO | D12 |
-| RST | D9 |
+| SDA / SS | GPIO 7 |
+| SCK | GPIO 4 |
+| MOSI | GPIO 6 |
+| MISO | GPIO 5 |
+| RST | GPIO 10 |
 | 3.3V | 3.3V |
 | GND | GND |
 
 Other outputs:
 
-- relay input: `D7`
-- status LED: `D8`
+- relay input: `GPIO 3`
+- status LED: `GPIO 1`
 
 Hardware notes:
 
@@ -68,6 +66,19 @@ Hardware notes:
 - use a transistor, MOSFET, or a logic-safe relay board if needed
 - add proper isolation and power design before driving a real door strike
 - do not feed the RC522 from `5V`
+- avoid ESP32-C3 flash pins `GPIO12-GPIO17`
+- avoid USB-JTAG pins `GPIO18-GPIO19` unless you really mean to repurpose them
+- avoid common strapping pins `GPIO2`, `GPIO8`, and `GPIO9`
+
+## Upload target
+
+The default PlatformIO environment is `esp32c3`.
+
+Current tested upload settings:
+
+- board: `esp32-c3-devkitm-1`
+- port: `COM6`
+- upload speed: `115200`
 
 ## Getting started
 
@@ -80,6 +91,7 @@ Copy-Item .\include\app_config.example.h .\include\app_config.h
 Then edit `include/app_config.h` and update at least:
 
 - controller name
+- SPI / RC522 pins if your board layout differs
 - relay pin
 - `kAuthorizedUids`
 
@@ -96,6 +108,12 @@ This starter is organized as a PlatformIO project.
 pio run
 pio run -t upload
 pio device monitor
+```
+
+If you want to build for Uno instead:
+
+```powershell
+pio run -e uno
 ```
 
 ## Recording approved tag UIDs
@@ -133,4 +151,4 @@ constexpr AuthorizedUid kAuthorizedUids[] = {
 ## Summary
 
 This repository is a safe starter for a local RFID-triggered lock controller on
-Arduino Uno. It is not an Apple Wallet or Home Key emulation project.
+ESP32-C3. It is not an Apple Wallet or Home Key emulation project.

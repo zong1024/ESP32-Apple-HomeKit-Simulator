@@ -142,10 +142,15 @@ void setup() {
   digitalWrite(AppConfig::kRelayPin, LOW);
   digitalWrite(AppConfig::kStatusLedPin, LOW);
 
+#if defined(ARDUINO_ARCH_ESP32)
+  SPI.begin(AppConfig::kSpiSckPin, AppConfig::kSpiMisoPin,
+            AppConfig::kSpiMosiPin, AppConfig::kRfidSsPin);
+#else
   SPI.begin();
+#endif
   gRfidReader.PCD_Init();
 
-  Serial.println(F("[BOOT] Arduino Uno RFID lock ready."));
+  Serial.println(F("[BOOT] RFID lock ready."));
   Serial.print(F("[BOOT] Controller: "));
   Serial.println(AppConfig::kControllerName);
   Serial.print(F("[BOOT] RC522 firmware 0x"));
